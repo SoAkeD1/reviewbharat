@@ -2,11 +2,16 @@ Project: ReviewBharat
 Author: Shrimon Mishra (github.com/SoAkeD1)
 Track: Coding & developer tools
 
-ReviewBharat reviews GitHub pull requests, diffs and staged changes with the BharatCode model API
-(OpenAI-compatible POST /chat/completions, model qwen-3.8-27b by default) and returns
+ReviewBharat reviews GitHub pull requests, diffs and staged changes with an AI model and returns
 severity-ranked findings with file, line and a suggested fix, in English, Hinglish or Hindi.
 
 Ways to use it: GitHub Action (PR comment), CLI, pre-commit hook, web UI.
 
-Where the BharatCode API is used: src/llm.js (client), src/review.js (prompt, chunking, parsing).
-Run: see README.md. Needs BHARATCODE_API_KEY in .env (not committed); demo mode works without it.
+Model API: built for the BharatCode API (OpenAI-compatible POST /chat/completions,
+default provider "bharatcode", model qwen-3.8-27b). It also works with any OpenAI-compatible
+provider via LLM_PROVIDER. The example reviews in this repo were generated with the same
+Qwen 3.8 27B model served through Groq, because my BharatCode student API access was still pending.
+
+Where the model API is used: src/llm.js (client), src/review.js (prompt, chunking, parsing),
+src/env.js (provider settings).
+Run: see README.md. Needs an API key in .env (not committed); demo mode works without one.
