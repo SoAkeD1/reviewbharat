@@ -1,12 +1,28 @@
 name: ReviewBharat
-description: AI code review for pull requests, powered by the BharatCode API. Posts findings as a PR comment.
+description: AI code review for pull requests, built on the BharatCode API (or any OpenAI-compatible API). Posts findings as a PR comment.
 author: Shrimon Mishra
 branding:
   icon: check-circle
   color: orange
 inputs:
+  provider:
+    description: "LLM provider: bharatcode, groq, gemini, openrouter or custom."
+    required: false
+    default: bharatcode
+  api_key:
+    description: API key for the chosen provider (store it as a repository secret). Without it, offline demo checks run instead.
+    required: false
+    default: ''
   bharatcode_api_key:
-    description: BharatCode API key (store it as a repository secret). Without it, offline demo checks run instead.
+    description: Deprecated alias of api_key for the BharatCode provider.
+    required: false
+    default: ''
+  model:
+    description: Model name. Empty = the provider's default.
+    required: false
+    default: ''
+  base_url:
+    description: OpenAI-compatible base URL (needed only for provider custom).
     required: false
     default: ''
   github_token:
@@ -21,10 +37,6 @@ inputs:
     description: Fail the check if any finding is at or above this severity (critical, high, medium, low, nit). Empty = never fail.
     required: false
     default: ''
-  model:
-    description: BharatCode model name.
-    required: false
-    default: qwen-3.8-27b
 runs:
   using: composite
   steps:
@@ -32,8 +44,10 @@ runs:
       shell: bash
       run: node "${{ github.action_path }}/src/action.js"
       env:
-        BHARATCODE_API_KEY: ${{ inputs.bharatcode_api_key }}
-        BHARATCODE_MODEL: ${{ inputs.model }}
+        LLM_PROVIDER: ${{ inputs.provider }}
+        LLM_API_KEY: ${{ inputs.api_key || inputs.bharatcode_api_key }}
+        LLM_MODEL: ${{ inputs.model }}
+        LLM_BASE_URL: ${{ inputs.base_url }}
         INPUT_GITHUB_TOKEN: ${{ inputs.github_token }}
         INPUT_LANG: ${{ inputs.lang }}
         INPUT_FAIL_ON: ${{ inputs.fail_on }}

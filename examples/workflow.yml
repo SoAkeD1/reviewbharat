@@ -15,6 +15,7 @@ jobs:
           node-version: 22
       - uses: SoAkeD1/reviewbharat@main
         with:
-          bharatcode_api_key: ${{ secrets.BHARATCODE_API_KEY }}
-          lang: en          # or hinglish / hi
+          provider: bharatcode  # or groq / gemini / openrouter
+          api_key: ${{ secrets.LLM_API_KEY }}
+          lang: en              # or hinglish / hi
           fail_on: critical # optional: fail the check on critical findings

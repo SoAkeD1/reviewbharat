@@ -20,7 +20,7 @@ async function main() {
 
   const diff = await fetchDiff(owner, repo, pr.number, token);
   const live = Boolean(config.apiKey);
-  if (!live) console.log('::warning::No BharatCode API key (secret not set, or a fork PR): running demo mode checks only.');
+  if (!live) console.log('::warning::No LLM API key (secret not set, or a fork PR): running demo mode checks only.');
   const result = live ? await reviewDiff(diff, { lang }) : demoReview(diff, { lang });
   const body = renderMarkdown(result);
 

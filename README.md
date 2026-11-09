@@ -48,16 +48,25 @@ the BharatCode model and covers real logic bugs too.
 | 🧱 **Robust model handling** | Per-file + per-hunk chunking, 503 retry, timeout, truncation handling, JSON repair. |
 | 📦 **Zero dependencies** | Node 20+, nothing to `npm install`. |
 
-## Setup with your BharatCode key
+## Setup with an API key
 
-Get a key at <https://bharatcode.ai/account> (students get free access), then:
+ReviewBharat is built for the **BharatCode** API and works with any OpenAI-compatible provider.
+Pick one, get a key, and set it in `.env`:
+
+| `LLM_PROVIDER` | Key variable | Default model | Get a key |
+|---|---|---|---|
+| `bharatcode` (default) | `BHARATCODE_API_KEY` | `qwen-3.8-27b` | <https://bharatcode.ai/account> (free for students) |
+| `groq` | `GROQ_API_KEY` | `llama-3.3-70b-versatile` | <https://console.groq.com/keys> (free tier) |
+| `gemini` | `GEMINI_API_KEY` | `gemini-2.5-flash` | <https://aistudio.google.com/apikey> (free tier) |
+| `openrouter` | `OPENROUTER_API_KEY` | `deepseek/deepseek-chat-v3-0324:free` | <https://openrouter.ai/keys> |
+| `custom` | `LLM_API_KEY` | set `LLM_MODEL` | any OpenAI-compatible server (set `LLM_BASE_URL`) |
 
 ```bash
 cp .env.example .env        # Windows cmd: copy .env.example .env
-# edit .env and set BHARATCODE_API_KEY=...
+# edit .env: set LLM_PROVIDER and that provider's key
 ```
 
-`.env` is git-ignored. Never commit your key.
+Model names change over time; override the default with `LLM_MODEL`. `.env` is git-ignored. Never commit your key.
 
 ## Usage
 
@@ -87,7 +96,7 @@ Set `GITHUB_TOKEN` in `.env` for private repos or higher GitHub rate limits.
 
 ## GitHub Action
 
-Add your key as a repository secret named `BHARATCODE_API_KEY`, then create
+Add your key as a repository secret named `LLM_API_KEY`, then create
 `.github/workflows/reviewbharat.yml`:
 
 ```yaml
@@ -107,8 +116,9 @@ jobs:
           node-version: 22
       - uses: SoAkeD1/reviewbharat@main
         with:
-          bharatcode_api_key: ${{ secrets.BHARATCODE_API_KEY }}
-          lang: en            # or hinglish / hi
+          provider: bharatcode  # or groq / gemini / openrouter
+          api_key: ${{ secrets.LLM_API_KEY }}
+          lang: en              # or hinglish / hi
           fail_on: critical   # optional
 ```
 

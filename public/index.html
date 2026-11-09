@@ -56,7 +56,7 @@
     <span class="badge" id="status">checking…</span>
   </div>
   <div id="out" aria-live="polite"></div>
-  <footer>Demo mode runs offline pattern checks (no AI). With a BharatCode API key, reviews come from the model. <a href="https://github.com/SoAkeD1/reviewbharat">Source on GitHub</a></footer>
+  <footer>Demo mode runs offline pattern checks (no AI). With an API key (BharatCode, Groq, Gemini or OpenRouter), reviews come from the AI model. <a href="https://github.com/SoAkeD1/reviewbharat">Source on GitHub</a></footer>
 </main>
 <script>
 const $ = (id) => document.getElementById(id);
@@ -88,7 +88,7 @@ diff --git a/web/calc.js b/web/calc.js
 
 fetch('/api/status').then(r => r.json()).then(s => {
   const b = $('status');
-  if (s.live) { b.textContent = 'AI live: ' + s.model; b.classList.add('live'); }
+  if (s.live) { b.textContent = 'AI live: ' + s.provider + ' · ' + s.model; b.classList.add('live'); }
   else { b.textContent = 'No API key: demo mode'; $('demo').checked = true; $('demo').disabled = true; }
 }).catch(() => { $('status').textContent = 'server offline'; });
 

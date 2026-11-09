@@ -7,7 +7,8 @@ import { config } from './env.js';
 import { fetchPrDiff } from './github.js';
 import { reviewDiff, demoReview, renderMarkdown, meetsThreshold, SEVERITIES, LANGS } from './review.js';
 
-const help = `ReviewBharat: AI code review powered by the BharatCode API
+const help = `ReviewBharat: AI code review built on the BharatCode API (or any OpenAI-compatible API)
+Provider: set LLM_PROVIDER=bharatcode|groq|gemini|openrouter|custom in .env
 
 Usage:
   reviewbharat <github-pr-url>        review a pull request
@@ -80,7 +81,7 @@ async function main() {
     return;
   }
   const demo = opts.demo || !config.apiKey;
-  if (demo && !opts.demo && !opts.json) console.error('No BHARATCODE_API_KEY set: running in demo mode (offline checks).\n');
+  if (demo && !opts.demo && !opts.json) console.error(`No ${config.keyVar} set: running in demo mode (offline checks).\n`);
   const result = demo ? demoReview(diff, { lang: opts.lang }) : await reviewDiff(diff, { lang: opts.lang });
   console.log(opts.json ? JSON.stringify(result, null, 2) : renderMarkdown(result));
   if (opts.failOn && meetsThreshold(result.findings, opts.failOn)) {

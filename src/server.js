@@ -43,7 +43,7 @@ createServer(async (req, res) => {
       return res.end(html);
     }
     if (req.method === 'GET' && path === '/api/status') {
-      return send(res, 200, { live: Boolean(config.apiKey), model: config.model });
+      return send(res, 200, { live: Boolean(config.apiKey), model: config.model, provider: config.providerLabel });
     }
     if (req.method === 'POST' && path === '/api/review') {
       let input;
