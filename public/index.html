@@ -106,7 +106,7 @@ $('go').onclick = async () => {
     out.append(el('p', 'summary', r.summary + ' ' + r.findings.length + ' finding(s) in ' + r.files.length + ' file(s).'));
     if (r.demo && $('lang').value === 'hi') out.append(el('p', 'warn', 'Demo mode explains in Hinglish; full Hindi needs the AI model.'));
     if (r.partialFiles && r.partialFiles.length) out.append(el('p', 'warn', 'Very large diff: only part of ' + r.partialFiles.join(', ') + ' was reviewed.'));
-    if (!r.findings.length) out.append(el('p', '', 'No problems found. ✅'));
+    if (!r.findings.length) out.append(el('p', '', 'No problems found.'));
     for (const f of r.findings) {
       const d = el('article', 'finding ' + f.severity);
       d.append(el('h3', '', f.title));

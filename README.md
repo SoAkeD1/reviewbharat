@@ -1,122 +1,120 @@
-# ReviewBharat 🔍
+<div align="center">
+
+# ReviewBharat
 
 **AI code review for every pull request, in English, Hinglish or Hindi.**
-Built on the [BharatCode](https://bharatcode.ai) model API for the BharatCode Build League.
 
-Point it at a GitHub PR, a `.diff` file, or your staged changes. ReviewBharat asks the model for a
-review and returns findings ranked **critical → nit**, each with file, line, a plain explanation and
-a suggested fix. Run it as a **GitHub Action**, a **CLI**, a **pre-commit hook**, or a **web UI**.
+Point it at a pull request and get a clear, ranked list of bugs and security issues,
+each with the exact file, line and a fix you can paste.
 
-Real AI review of [`examples/sample.diff`](examples/sample.diff) by **Qwen 3.8 27B**, the same model
-BharatCode serves. These examples were generated through **Groq** (`LLM_PROVIDER=groq`) while my BharatCode
-student API access was pending; a review takes 1–3 seconds. Excerpt:
+[![Tests](https://github.com/SoAkeD1/reviewbharat/actions/workflows/test.yml/badge.svg)](https://github.com/SoAkeD1/reviewbharat/actions/workflows/test.yml)
+![Node 20+](https://img.shields.io/badge/node-20%2B-339933)
+![Zero dependencies](https://img.shields.io/badge/dependencies-0-blue)
+[![License: MIT](https://img.shields.io/badge/license-MIT-yellow)](LICENSE)
+![BharatCode Build League](https://img.shields.io/badge/BharatCode-Build%20League-ff9f43)
 
-```text
-## 🔍 ReviewBharat code review
+[Quick start](#quick-start) · [Screenshots](#screenshots) · [Features](#features) · [Use it your way](#use-it-your-way) · [How it works](#how-it-works)
 
-Adds a hardcoded API key and a vulnerable user lookup function to the database module, and
-introduces an unsafe eval-based expression runner in the web calculator.
+</div>
 
-**4 finding(s)** across 2 file(s): 3 critical, 1 medium.
+---
 
-### 🛑 SQL Injection Vulnerability
-`app/db.py:16` · critical
+## Why ReviewBharat
 
-String concatenation in SQL queries allows attackers to execute arbitrary SQL commands by
-manipulating the `name` input.
+Most student and small-team projects merge code that nobody else has read. Hard-coded secrets,
+SQL injection and silent errors slip straight into `main`. Existing AI reviewers are often paid
+and only speak English.
 
-**Suggestion:** Use parameterized queries to prevent injection. Example:
-`cur = conn.execute("SELECT * FROM users WHERE name = ?", (name,))`
+ReviewBharat reviews every change automatically and explains each problem the way you would
+explain it to a friend, in **English, Hinglish or Hindi**. It is built for the
+[BharatCode](https://bharatcode.ai) model API and runs on Qwen 3.8 27B.
+
+## Screenshots
+
+<p align="center">
+  <img src="docs/web-ui-english.jpg" alt="ReviewBharat web UI showing an English review with critical findings" width="49%">
+  <img src="docs/web-ui-hinglish.jpg" alt="ReviewBharat web UI showing the same review explained in Hinglish" width="49%">
+</p>
+<p align="center"><sub>The same pull request, reviewed in English (left) and Hinglish (right).</sub></p>
+
+## One finding, three languages
+
+ReviewBharat found an SQL injection in [`examples/sample.diff`](examples/sample.diff). Here is how it explains it:
+
+| Language | Explanation |
+|---|---|
+| **English** | The `get_user` function constructs the SQL query using string concatenation with the `name` parameter. This allows an attacker to inject arbitrary SQL commands. |
+| **Hinglish** | Yahan user input `name` seedha string concatenation se SQL query mein ja raha hai. Isse attacker database mein arbitrary queries chalakar data leak ya corruption kar sakta hai. |
+| **Hindi** | यहाँ `name` पैरामीटर को सीधे SQL स्ट्रिंग में जोड़ा गया है, जिससे SQL Injection हमला संभव है। |
+
+Every finding also comes with a fix:
+
+```python
+cur = conn.execute("SELECT * FROM users WHERE name = ?", (name,))
 ```
 
-The same diff with `--lang hinglish`:
+Full reviews: [English](examples/sample-review.md) · [Hinglish](examples/sample-review-hinglish.md) · [Hindi](examples/sample-review-hindi.md)
 
-```text
-### 🛑 SQL Injection vulnerability
-`app/db.py:14` · critical
+## Quick start
 
-Yahan user input `name` seedha string concatenation se SQL query mein ja raha hai. Isse attacker
-database mein arbitrary queries chalwa sakta hai, jaise data delete karna ya sensitive data leak karna.
-
-**Suggestion:** Parameterized queries use karo. Example:
-`cur = conn.execute("SELECT * FROM users WHERE name = ?", (name,))`
-```
-
-Full outputs: [English](examples/sample-review.md) · [Hinglish](examples/sample-review-hinglish.md)
-
-## Try it in 30 seconds (no API key needed)
+Try it in 30 seconds, no API key needed:
 
 ```bash
 git clone https://github.com/SoAkeD1/reviewbharat
 cd reviewbharat
-npm run demo          # reviews examples/sample.diff
-npm start             # web UI at http://localhost:3000 → "Load sample diff" → Review
+npm run demo
 ```
 
-Without a key, ReviewBharat runs **demo mode**: fast offline pattern checks (hard-coded secrets,
-SQL injection, `eval`, swallowed exceptions, debug output, TODOs). With a key, every review comes from
-the AI model you configure (BharatCode by default) and covers real logic bugs too.
+Or open the web UI, click **Load sample diff**, then **Review**:
+
+```bash
+npm start            # http://localhost:3000
+```
+
+Without a key, ReviewBharat runs **demo mode**: quick offline checks for hard-coded secrets,
+SQL injection, `eval`, swallowed exceptions, debug output and TODOs. Add a key and every review
+comes from the AI model, which also catches logic bugs.
 
 ## Features
 
 | | |
 |---|---|
-| 🤖 **GitHub Action** | Reviews every PR and posts (then updates) one tidy comment. Optional `fail_on` gate for CI. |
-| 🇮🇳 **Hinglish / Hindi** | `--lang hinglish` or `--lang hi`: explanations the way Indian developers actually talk. |
-| ✋ **Pre-commit hook** | `--install-hook` blocks commits that add critical issues. |
-| 💻 **CLI** | PR URL, diff file, stdin, `--staged`, `--local`; Markdown or `--json` output. |
-| 🌐 **Web UI** | Paste a PR link or diff, pick a language, see colour-coded findings. |
-| 🧱 **Robust model handling** | Per-file + per-hunk chunking, busy/rate-limit retry, timeout, truncation handling, JSON repair. |
-| 🔌 **Any OpenAI-compatible API** | BharatCode by default; Groq, Gemini, OpenRouter or your own server via `LLM_PROVIDER`. |
-| 📦 **Zero dependencies** | Node 20+, nothing to `npm install`. |
+| **GitHub Action** | Reviews every pull request and keeps one tidy comment up to date. Can fail the check on serious issues. |
+| **Hinglish and Hindi** | `--lang hinglish` or `--lang hi` for explanations in the language you think in. |
+| **Pre-commit hook** | Stops a commit that adds a critical issue, before it ever leaves your laptop. |
+| **CLI** | Review a PR link, a diff file, piped `git diff`, or your staged changes. Markdown or JSON output. |
+| **Web UI** | Paste a link or a diff, pick a language, read colour-coded findings. |
+| **Built to be reliable** | Splits large diffs, waits and retries when the API is busy or rate-limited, and recovers from messy model output. |
+| **Any provider** | BharatCode by default; Groq, Gemini, OpenRouter or your own OpenAI-compatible server. |
+| **Zero dependencies** | Node 20 or newer. Nothing to install. |
 
-## Setup with an API key
+## Setup
 
-ReviewBharat is built for the **BharatCode** API and works with any OpenAI-compatible provider.
-Pick one, get a key, and set it in `.env`:
-
-| `LLM_PROVIDER` | Key variable | Default model | Status | Get a key |
-|---|---|---|---|---|
-| `bharatcode` (default) | `BHARATCODE_API_KEY` | `qwen-3.8-27b` | per BharatCode docs | <https://bharatcode.ai/account> (free for students) |
-| `groq` | `GROQ_API_KEY` | `qwen/qwen3.8-27b` | ✅ tested | <https://console.groq.com/keys> (free tier, ~1,000 output tokens/min) |
-| `gemini` | `GEMINI_API_KEY` | `gemini-2.5-flash` | example, untested | <https://aistudio.google.com/apikey> (free tier) |
-| `openrouter` | `OPENROUTER_API_KEY` | `deepseek/deepseek-chat-v3-0324:free` | example, untested | <https://openrouter.ai/keys> |
-| `custom` | `LLM_API_KEY` | set `LLM_MODEL` | n/a | any OpenAI-compatible server (set `LLM_BASE_URL`) |
+ReviewBharat is built for the BharatCode API and works with any OpenAI-compatible provider.
+Copy the settings file, choose a provider and add its key:
 
 ```bash
 cp .env.example .env        # Windows cmd: copy .env.example .env
-# edit .env: set LLM_PROVIDER and that provider's key
 ```
 
-Model names change over time; override the default with `LLM_MODEL`. `.env` is git-ignored. Never commit your key.
+| `LLM_PROVIDER` | Key variable | Default model | Status | Get a key |
+|---|---|---|---|---|
+| `bharatcode` (default) | `BHARATCODE_API_KEY` | `qwen-3.8-27b` | per BharatCode docs | [bharatcode.ai/account](https://bharatcode.ai/account), free for students |
+| `groq` | `GROQ_API_KEY` | `qwen/qwen3.8-27b` | tested | [console.groq.com/keys](https://console.groq.com/keys), free tier |
+| `gemini` | `GEMINI_API_KEY` | `gemini-2.5-flash` | example, untested | [aistudio.google.com/apikey](https://aistudio.google.com/apikey) |
+| `openrouter` | `OPENROUTER_API_KEY` | `deepseek/deepseek-chat-v3-0324:free` | example, untested | [openrouter.ai/keys](https://openrouter.ai/keys) |
+| `custom` | `LLM_API_KEY` | set `LLM_MODEL` | | any OpenAI-compatible server, set `LLM_BASE_URL` |
 
-## Usage
+Model names change over time; override any default with `LLM_MODEL`. `.env` is git-ignored, so your
+key never leaves your machine.
 
-```bash
-# CLI
-node src/cli.js https://github.com/owner/repo/pull/123
-node src/cli.js changes.diff --lang hinglish
-git diff main | node src/cli.js -
-node src/cli.js --staged --fail-on high     # exit code 2 if high-or-worse issues
+> The example reviews and screenshots in this README were generated with Qwen 3.8 27B served through
+> Groq, because my BharatCode student API access was still pending. Switching to BharatCode is one line:
+> `LLM_PROVIDER=bharatcode`.
 
-# Pre-commit hook (run inside your project)
-node /path/to/reviewbharat/src/cli.js --install-hook
+## Use it your way
 
-# Web UI
-npm start
-```
-
-| Option | Meaning |
-|---|---|
-| `--demo` | Offline pattern checks, no key needed |
-| `--lang en\|hinglish\|hi` | Language for explanations (default `en`) |
-| `--fail-on <severity>` | Exit 2 if any finding is at or above `critical/high/medium/low/nit` |
-| `--json` | Machine-readable output |
-| `--staged` / `--local` | Review `git diff --staged` / `git diff HEAD` |
-
-Set `GITHUB_TOKEN` in `.env` for private repos or higher GitHub rate limits.
-
-## GitHub Action
+### On every pull request (GitHub Action)
 
 Add your key as a repository secret named `LLM_API_KEY`, then create
 `.github/workflows/reviewbharat.yml`:
@@ -138,47 +136,90 @@ jobs:
           node-version: 22
       - uses: SoAkeD1/reviewbharat@main
         with:
-          provider: bharatcode  # or groq / gemini / openrouter
+          provider: bharatcode   # or groq, gemini, openrouter
           api_key: ${{ secrets.LLM_API_KEY }}
-          lang: en              # or hinglish / hi
-          fail_on: critical     # optional
+          lang: en               # or hinglish, hi
+          fail_on: critical      # optional: fail the check on critical findings
 ```
 
-Without the secret (for example on PRs from forks) it falls back to demo checks. The review also
-appears in the job summary when the token cannot comment.
+Without the secret (for example on pull requests from forks) it falls back to demo checks, and the
+review is also written to the job summary.
+
+### From the terminal (CLI)
+
+```bash
+node src/cli.js https://github.com/owner/repo/pull/123
+node src/cli.js changes.diff --lang hinglish
+git diff main | node src/cli.js -
+node src/cli.js --staged --fail-on high      # exit code 2 if high-or-worse issues
+```
+
+| Option | What it does |
+|---|---|
+| `--lang en\|hinglish\|hi` | Language for explanations (default `en`) |
+| `--staged` / `--local` | Review `git diff --staged` / `git diff HEAD` |
+| `--fail-on <severity>` | Exit with code 2 at or above `critical`, `high`, `medium`, `low` or `nit` |
+| `--json` | Machine-readable output |
+| `--demo` | Offline checks only, no key needed |
+
+Set `GITHUB_TOKEN` in `.env` for private repositories or higher GitHub rate limits.
+
+### Before every commit (pre-commit hook)
+
+Run this once inside your own project:
+
+```bash
+node /path/to/reviewbharat/src/cli.js --install-hook
+```
+
+Commits that add a critical issue are blocked. Skip the check once with `git commit --no-verify`.
+
+### In the browser (web UI)
+
+```bash
+npm start
+```
+
+Open http://localhost:3000, paste a pull request link or a diff, choose a language and click **Review**.
+The server only listens on your own machine.
 
 ## How it works
 
 ```text
-PR URL / diff / git ──► github.js (fetch diff)
-                          │
-                          ▼
-                     review.js: split per file → per hunk → ≤24k-char chunks
-                          │
-                          ▼
-                     llm.js ──► BharatCode API  POST /chat/completions  (qwen-3.8-27b)
-                          │      • 503 / 429 → wait and retry   • 180 s timeout
-                          │      • cut-off output → one retry at 32k tokens, reasoning off
-                          ▼
-                     parse JSON (handles <think>, fences, extra prose) → validate → sort
-                          │
-                          ▼
-              Markdown  ·  JSON  ·  web UI  ·  PR comment  ·  exit code
+PR link / diff / git
+        │
+        ▼
+github.js ─── fetches the pull request diff
+        │
+        ▼
+review.js ─── splits it by file and hunk into chunks the model can read
+        │
+        ▼
+llm.js ────── POST /chat/completions  (BharatCode API, Qwen 3.8 27B)
+        │       waits and retries when busy or rate-limited, 180 s timeout,
+        │       retries once with a bigger budget if the answer is cut off
+        ▼
+parser ────── reads the JSON answer even with reasoning text or extra prose,
+        │     validates every finding and sorts by severity
+        ▼
+Markdown · JSON · web UI · pull request comment · exit code
 ```
 
 ## Limits
 
-- Very large single hunks (over ~24k characters) are reviewed partially; the output says so.
-- GitHub cannot return diffs for huge PRs; review those locally with `git diff | node src/cli.js -`.
-- Demo mode is pattern matching, not AI; it misses logic bugs and can flag false positives.
-- Line numbers in AI reviews come from the model and can be off by a line or two (see the Hinglish example).
+- Very large single hunks (over about 24,000 characters) are reviewed partially; the output says so.
+- GitHub cannot return diffs for huge pull requests; review those locally with `git diff | node src/cli.js -`.
+- Line numbers in AI reviews come from the model and can be off by a line or two.
+- Demo mode is pattern matching, not AI: it misses logic bugs and can raise false alarms.
 
 ## Development
 
 ```bash
-npm test     # 17 unit tests, no network
+npm test     # 17 unit tests, no network needed
 ```
+
+Tests run automatically on Node 20, 22 and 24 for every push.
 
 ## License
 
-MIT © 2026 Shrimon Mishra
+MIT © 2026 [Shrimon Mishra](https://github.com/SoAkeD1). Built for the BharatCode Build League.

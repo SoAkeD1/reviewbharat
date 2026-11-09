@@ -291,17 +291,15 @@ export function demoReview(diff, { lang = 'en' } = {}) {
 
 // ---------- Output ----------
 
-const ICON = { critical: '🛑', high: '🔴', medium: '🟠', low: '🟡', nit: '⚪' };
-
 export function renderMarkdown(r) {
-  const out = ['## 🔍 ReviewBharat code review\n'];
+  const out = ['## ReviewBharat code review\n'];
   if (r.summary) out.push(`${r.summary}\n`);
   const counts = SEVERITIES.map((s) => [s, r.findings.filter((f) => f.severity === s).length]).filter(([, n]) => n);
   out.push(`**${r.findings.length} finding(s)** across ${r.files.length} file(s)${counts.length ? ': ' + counts.map(([s, n]) => `${n} ${s}`).join(', ') : ''}.\n`);
-  if (r.partialFiles?.length) out.push(`> ⚠️ Very large diff: only part of ${r.partialFiles.map((f) => `\`${f}\``).join(', ')} was reviewed.\n`);
-  if (!r.findings.length) out.push('No problems found. ✅\n');
+  if (r.partialFiles?.length) out.push(`> **Note:** very large diff, only part of ${r.partialFiles.map((f) => `\`${f}\``).join(', ')} was reviewed.\n`);
+  if (!r.findings.length) out.push('No problems found.\n');
   for (const f of r.findings) {
-    out.push(`### ${ICON[f.severity]} ${f.title}\n\`${f.file}${f.line ? ':' + f.line : ''}\` · ${f.severity}\n`);
+    out.push(`### [${f.severity.toUpperCase()}] ${f.title}\n\`${f.file}${f.line ? ':' + f.line : ''}\`\n`);
     if (f.explanation) out.push(`${f.explanation}\n`);
     if (f.suggestion) out.push(`**Suggestion:** ${f.suggestion}\n`);
   }
