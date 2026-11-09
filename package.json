@@ -1,0 +1,18 @@
+{
+  "name": "reviewbharat",
+  "version": "0.2.0",
+  "description": "AI code review for GitHub pull requests in English, Hinglish or Hindi, built on the BharatCode model API.",
+  "type": "module",
+  "bin": { "reviewbharat": "src/cli.js" },
+  "scripts": {
+    "start": "node src/server.js",
+    "review": "node src/cli.js",
+    "demo": "node src/cli.js --demo examples/sample.diff",
+    "test": "node --test"
+  },
+  "keywords": ["code-review", "ai", "github-action", "bharatcode", "pull-request", "hinglish", "cli"],
+  "author": "Shrimon Mishra (https://github.com/SoAkeD1)",
+  "repository": { "type": "git", "url": "https://github.com/SoAkeD1/reviewbharat" },
+  "engines": { "node": ">=20" },
+  "license": "MIT"
+}

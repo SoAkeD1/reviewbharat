@@ -1,0 +1,39 @@
+name: ReviewBharat
+description: AI code review for pull requests, powered by the BharatCode API. Posts findings as a PR comment.
+author: Shrimon Mishra
+branding:
+  icon: check-circle
+  color: orange
+inputs:
+  bharatcode_api_key:
+    description: BharatCode API key (store it as a repository secret). Without it, offline demo checks run instead.
+    required: false
+    default: ''
+  github_token:
+    description: Token used to read the PR diff and post the comment.
+    required: false
+    default: ${{ github.token }}
+  lang:
+    description: "Language for explanations: en, hinglish or hi."
+    required: false
+    default: en
+  fail_on:
+    description: Fail the check if any finding is at or above this severity (critical, high, medium, low, nit). Empty = never fail.
+    required: false
+    default: ''
+  model:
+    description: BharatCode model name.
+    required: false
+    default: qwen-3.8-27b
+runs:
+  using: composite
+  steps:
+    - name: Review pull request
+      shell: bash
+      run: node "${{ github.action_path }}/src/action.js"
+      env:
+        BHARATCODE_API_KEY: ${{ inputs.bharatcode_api_key }}
+        BHARATCODE_MODEL: ${{ inputs.model }}
+        INPUT_GITHUB_TOKEN: ${{ inputs.github_token }}
+        INPUT_LANG: ${{ inputs.lang }}
+        INPUT_FAIL_ON: ${{ inputs.fail_on }}

@@ -1,0 +1,12 @@
+Project: ReviewBharat
+Author: Shrimon Mishra (github.com/SoAkeD1)
+Track: Coding & developer tools
+
+ReviewBharat reviews GitHub pull requests, diffs and staged changes with the BharatCode model API
+(OpenAI-compatible POST /chat/completions, model qwen-3.8-27b by default) and returns
+severity-ranked findings with file, line and a suggested fix, in English, Hinglish or Hindi.
+
+Ways to use it: GitHub Action (PR comment), CLI, pre-commit hook, web UI.
+
+Where the BharatCode API is used: src/llm.js (client), src/review.js (prompt, chunking, parsing).
+Run: see README.md. Needs BHARATCODE_API_KEY in .env (not committed); demo mode works without it.

@@ -1,0 +1,30 @@
+diff --git a/app/db.py b/app/db.py
+index 1111111..2222222 100644
+--- a/app/db.py
++++ b/app/db.py
+@@ -10,6 +10,14 @@ import sqlite3
+
+ conn = sqlite3.connect("app.db")
+
++API_KEY = "demo-hardcoded-secret-123"
++
++def get_user(name):
++    # TODO: add caching
++    cur = conn.execute("SELECT * FROM users WHERE name = '" + name + "'")
++    try:
++        return cur.fetchone()
++    except:
++        pass
++
+ def close():
+     conn.close()
+diff --git a/web/calc.js b/web/calc.js
+index 3333333..4444444 100644
+--- a/web/calc.js
++++ b/web/calc.js
+@@ -1,3 +1,6 @@
+ export function add(a, b) { return a + b; }
++export function run(expr) {
++  console.log("running", expr);
++  return eval(expr);
++}
