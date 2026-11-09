@@ -7,21 +7,35 @@ Point it at a GitHub PR, a `.diff` file, or your staged changes. ReviewBharat as
 review and returns findings ranked **critical → nit**, each with file, line, a plain explanation and
 a suggested fix. Run it as a **GitHub Action**, a **CLI**, a **pre-commit hook**, or a **web UI**.
 
-Demo-mode output for [`examples/sample.diff`](examples/sample.diff):
+Real AI review of [`examples/sample.diff`](examples/sample.diff) by **Qwen 3.8 27B** (the same model BharatCode serves), in about 1.3 seconds:
 
 ```text
 ## 🔍 ReviewBharat code review
-**6 finding(s)** across 2 file(s): 2 critical, 1 high, 1 medium, 1 low, 1 nit.
+Adds a hardcoded API key and a vulnerable user lookup function to the database module,
+and introduces a dangerous eval-based execution function in the calculator module.
 
-### 🛑 Hard-coded secret
-`app/db.py:13` · critical
-Credentials committed to the repo are exposed to everyone with access and live in git history.
-**Suggestion:** Read it from an environment variable and rotate the leaked value.
+**4 finding(s)** across 2 file(s): 3 critical, 1 medium.
 
-### 🛑 Use of eval()
-`web/calc.js:4` · critical
+### 🛑 SQL Injection
+`app/db.py:16` · critical
+The query is constructed via string concatenation, allowing attackers to inject arbitrary
+SQL commands through the `name` parameter.
+**Suggestion:** Use parameterized queries:
+`cur = conn.execute("SELECT * FROM users WHERE name = ?", (name,))`.
 ...
 ```
+
+The same review in Hinglish (`--lang hinglish`):
+
+```text
+### 🛑 SQL Injection vulnerability
+`app/db.py:14` · critical
+Yahan user input `name` seedha string concatenation se SQL query mein ja raha hai. Isse attacker
+database mein arbitrary queries chalwa sakta hai, jaise data delete karna ya sensitive data leak karna.
+**Suggestion:** Parameterized queries use karo.
+```
+
+Full outputs: [English](examples/sample-review.md) · [Hinglish](examples/sample-review-hinglish.md)
 
 ## Try it in 30 seconds (no API key needed)
 
@@ -45,7 +59,8 @@ the BharatCode model and covers real logic bugs too.
 | ✋ **Pre-commit hook** | `--install-hook` blocks commits that add critical issues. |
 | 💻 **CLI** | PR URL, diff file, stdin, `--staged`, `--local`; Markdown or `--json` output. |
 | 🌐 **Web UI** | Paste a PR link or diff, pick a language, see colour-coded findings. |
-| 🧱 **Robust model handling** | Per-file + per-hunk chunking, 503 retry, timeout, truncation handling, JSON repair. |
+| 🧱 **Robust model handling** | Per-file + per-hunk chunking, busy/rate-limit retry, timeout, truncation handling, JSON repair. |
+| 🔌 **Any OpenAI-compatible API** | BharatCode by default; Groq, Gemini, OpenRouter or your own server via `LLM_PROVIDER`. |
 | 📦 **Zero dependencies** | Node 20+, nothing to `npm install`. |
 
 ## Setup with an API key
@@ -56,7 +71,7 @@ Pick one, get a key, and set it in `.env`:
 | `LLM_PROVIDER` | Key variable | Default model | Get a key |
 |---|---|---|---|
 | `bharatcode` (default) | `BHARATCODE_API_KEY` | `qwen-3.8-27b` | <https://bharatcode.ai/account> (free for students) |
-| `groq` | `GROQ_API_KEY` | `llama-3.3-70b-versatile` | <https://console.groq.com/keys> (free tier) |
+| `groq` | `GROQ_API_KEY` | `qwen/qwen3.8-27b` | <https://console.groq.com/keys> (free tier, ~1,000 output tokens/min) |
 | `gemini` | `GEMINI_API_KEY` | `gemini-2.5-flash` | <https://aistudio.google.com/apikey> (free tier) |
 | `openrouter` | `OPENROUTER_API_KEY` | `deepseek/deepseek-chat-v3-0324:free` | <https://openrouter.ai/keys> |
 | `custom` | `LLM_API_KEY` | set `LLM_MODEL` | any OpenAI-compatible server (set `LLM_BASE_URL`) |
@@ -135,7 +150,7 @@ PR URL / diff / git ──► github.js (fetch diff)
                           │
                           ▼
                      llm.js ──► BharatCode API  POST /chat/completions  (qwen-3.8-27b)
-                          │      • 503 → back off and retry   • 180 s timeout
+                          │      • 503 / 429 → wait and retry   • 180 s timeout
                           │      • cut-off output → one retry at 32k tokens, reasoning off
                           ▼
                      parse JSON (handles <think>, fences, extra prose) → validate → sort

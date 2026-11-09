@@ -20,7 +20,7 @@ try {
 // Model names change over time: override with LLM_MODEL if a default is retired.
 export const PROVIDERS = {
   bharatcode: { label: 'BharatCode', baseUrl: 'https://bharatcode.ai/api/model/v1', model: 'qwen-3.8-27b', keyVar: 'BHARATCODE_API_KEY', reasoningNone: true },
-  groq: { label: 'Groq', baseUrl: 'https://api.groq.com/openai/v1', model: 'llama-3.3-70b-versatile', keyVar: 'GROQ_API_KEY' },
+  groq: { label: 'Groq', baseUrl: 'https://api.groq.com/openai/v1', model: 'qwen/qwen3.8-27b', keyVar: 'GROQ_API_KEY' },
   gemini: { label: 'Google Gemini', baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai', model: 'gemini-2.5-flash', keyVar: 'GEMINI_API_KEY' },
   openrouter: { label: 'OpenRouter', baseUrl: 'https://openrouter.ai/api/v1', model: 'deepseek/deepseek-chat-v3-0324:free', keyVar: 'OPENROUTER_API_KEY' },
   custom: { label: 'Custom', baseUrl: '', model: '', keyVar: 'LLM_API_KEY' },

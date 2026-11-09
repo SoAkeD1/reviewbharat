@@ -42,6 +42,14 @@ export async function chat(messages, { maxTokens = 16000, reasoningEffort, retri
       await sleep(2000 * (attempt + 1));
       continue;
     }
+    // 429 = rate limited (common on free tiers): wait as long as the provider asks, up to 65 s.
+    if (res.status === 429 && attempt < retries) {
+      const waitS = Number(res.headers.get('retry-after')) || Number((await res.text().catch(() => '')).match(/try again in ([\d.]+)s/)?.[1]) || 10;
+      const ms = Math.min(Math.ceil(waitS * 1000) + 500, 65_000);
+      process.stderr.write(`${config.providerLabel} rate limit hit, waiting ${Math.round(ms / 1000)}s...\n`);
+      await sleep(ms);
+      continue;
+    }
     if (!res.ok) {
       const text = await res.text().catch(() => '');
       const id = res.headers.get('x-request-id');
